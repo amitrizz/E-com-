@@ -5,7 +5,19 @@ import { uploadProductImage } from "@/lib/product-media";
 export const runtime = "nodejs";
 
 const MAX_FILES = 6;
-const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const ALLOWED = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
+
+function isAllowedImage(file: File): boolean {
+  if (ALLOWED.has(file.type)) return true;
+  const name = file.name.toLowerCase();
+  return /\.(jpe?g|png|webp|gif|avif)$/.test(name);
+}
 
 export async function POST(request: Request) {
   try {
@@ -26,9 +38,11 @@ export async function POST(request: Request) {
 
     const urls: string[] = [];
     for (const file of entries) {
-      if (!ALLOWED.has(file.type)) {
+      if (!isAllowedImage(file)) {
         return NextResponse.json(
-          { error: `Unsupported type: ${file.type}. Use JPEG, PNG, or WebP.` },
+          {
+            error: `Unsupported type: ${file.type || "unknown"}. Use JPEG, PNG, WebP, GIF, or AVIF.`,
+          },
           { status: 400 }
         );
       }

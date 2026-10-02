@@ -47,7 +47,7 @@ export function SizeChartUpload({ value, onChange }: Props) {
     <div>
       <label className="block text-sm mb-2">Size chart image (optional)</label>
       <p className="text-xs text-muted mb-3">
-        Upload a size guide (JPEG/PNG). Stored optimized in MongoDB. Shoppers see this alongside size
+        Upload a size guide (JPEG, PNG, WebP, GIF, or AVIF). Stored optimized in MongoDB. Shoppers see this alongside size
         labels when both are set.
       </p>
 
@@ -68,7 +68,7 @@ export function SizeChartUpload({ value, onChange }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif,.avif"
         className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:border file:border-line file:bg-paper file:text-ink"
         disabled={uploading}
         onChange={(e) => onFiles(e.target.files)}

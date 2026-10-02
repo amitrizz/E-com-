@@ -49,7 +49,7 @@ export function ProductImageUpload({ value, onChange }: Props) {
     <div>
       <label className="block text-sm mb-2">Product images</label>
       <p className="text-xs text-muted mb-3">
-        Upload JPEG or PNG. We optimize and store as WebP in MongoDB (max 6 images, 8MB each).
+        Upload JPEG, PNG, WebP, GIF, or AVIF. We optimize and store as WebP in MongoDB (max 6 images, 8MB each).
       </p>
 
       <div className="flex flex-wrap gap-3 mb-4">
@@ -71,7 +71,7 @@ export function ProductImageUpload({ value, onChange }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif,.avif"
         multiple
         className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:border file:border-line file:bg-paper file:text-ink"
         disabled={uploading || value.length >= 6}
