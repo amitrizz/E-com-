@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       sizeChartImage: body.sizeChartImage?.trim() || undefined,
       images: body.images.map((u) => u.trim()).filter(Boolean),
       stock: Number(body.stock ?? 0),
+      specDetails: body.specDetails?.length ? body.specDetails : undefined,
       specs: body.specs ?? {
         material: "See description",
         dimensions: "—",

@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/mongodb";
-import type { Product, ProductSpecs } from "@/types/product";
+import type { Product, ProductSpecDetail, ProductSpecs } from "@/types/product";
 
 const COLLECTION = "kashu_products";
 
@@ -16,6 +16,7 @@ export type CreateProductInput = {
   images: string[];
   stock: number;
   specs: ProductSpecs;
+  specDetails?: ProductSpecDetail[];
   badge?: Product["badge"];
 };
 
@@ -46,6 +47,7 @@ function docToProduct(doc: Record<string, unknown>): Product {
     rating: Number(doc.rating ?? 4.5),
     reviewCount: Number(doc.reviewCount ?? 0),
     specs: doc.specs as ProductSpecs,
+    specDetails: doc.specDetails as ProductSpecDetail[] | undefined,
   };
 }
 

@@ -54,6 +54,7 @@ export async function PUT(request: Request, context: RouteContext) {
       sizeChartImage: body.sizeChartImage?.trim() || undefined,
       images: body.images.map((u) => u.trim()).filter(Boolean),
       stock: Number(body.stock ?? 0),
+      specDetails: body.specDetails?.length ? body.specDetails : undefined,
       specs: body.specs ?? existing.specs,
       badge:
         body.badge === "New" || body.badge === "Bestseller" || body.badge === "Sale"

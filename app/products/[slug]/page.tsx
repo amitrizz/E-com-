@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ProductDescriptionBlock } from "@/components/product/product-description-block";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductPurchaseProvider } from "@/components/product/product-purchase-context";
 import { ProductPurchaseActions } from "@/components/product/product-purchase-actions";
@@ -61,12 +62,7 @@ export default async function ProductPage({ params }: Props) {
             </div>
             <ProductStickyBar product={product} />
           </ProductPurchaseProvider>
-          <p className="mt-6 sm:mt-8 text-muted leading-relaxed text-[15px] sm:text-base">{product.description}</p>
-          <dl className="mt-8 sm:mt-12 space-y-3 text-sm border-t border-line pt-6 sm:pt-8 pb-2">
-            <div><dt className="text-muted inline">Material: </dt><dd className="inline text-charcoal">{product.specs.material}</dd></div>
-            <div><dt className="text-muted inline">Care: </dt><dd className="inline text-charcoal">{product.specs.care}</dd></div>
-            <div><dt className="text-muted inline">Origin: </dt><dd className="inline text-charcoal">{product.specs.origin}</dd></div>
-          </dl>
+          <ProductDescriptionBlock product={product} />
         </div>
       </div>
       {related.length > 0 && (

@@ -7,6 +7,11 @@ export type ProductSpecs = {
   origin: string;
 };
 
+export type ProductSpecDetail = {
+  label: string;
+  value: string;
+};
+
 export type Product = {
   id: string;
   slug: string;
@@ -26,6 +31,8 @@ export type Product = {
   rating: number;
   reviewCount: number;
   specs: ProductSpecs;
+  /** Parsed from admin "Label: value" description paste */
+  specDetails?: ProductSpecDetail[];
 };
 
 export type Category = {

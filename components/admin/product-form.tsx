@@ -6,6 +6,11 @@ import { ProductImageUpload } from "@/components/admin/product-image-upload";
 import { SizeChartUpload } from "@/components/admin/size-chart-upload";
 import { authHeaders, useAuth } from "@/hooks/auth-context";
 import type { CatalogProduct } from "@/lib/catalog";
+import {
+  formatProductTextForEditor,
+  inferSpecsFromDetails,
+  parsePastedProductText,
+} from "@/lib/parse-product-description";
 
 const CATEGORIES = [
   { slug: "bags", label: "Bags" },
@@ -38,8 +43,13 @@ export function ProductForm(props: Props) {
       setError("Add at least one product image.");
       return;
     }
-    setPending(true);
     const fd = new FormData(e.currentTarget);
+    const rawDescription = String(fd.get("description") ?? "").trim();
+    if (!rawDescription) {
+      setError("Add a description or paste specification lines.");
+      return;
+    }
+    setPending(true);
     const colors = String(fd.get("colors") ?? "")
       .split(",")
       .map((s) => s.trim())
@@ -49,9 +59,26 @@ export function ProductForm(props: Props) {
       ? sizesRaw.split(",").map((s) => s.trim()).filter(Boolean)
       : undefined;
 
+    const parsed = parsePastedProductText(rawDescription);
+    const formSpecs = {
+      material: String(fd.get("material")),
+      dimensions: String(fd.get("dimensions")),
+      care: String(fd.get("care")),
+      origin: String(fd.get("origin")),
+    };
+    const specs =
+      parsed.specDetails.length > 0
+        ? inferSpecsFromDetails(parsed.specDetails, formSpecs)
+        : formSpecs;
+
     const body = {
       name: String(fd.get("name")),
-      description: String(fd.get("description")),
+      description:
+        parsed.summary ||
+        (parsed.specDetails.length > 0
+          ? String(fd.get("name")).trim()
+          : rawDescription),
+      specDetails: parsed.specDetails.length > 0 ? parsed.specDetails : undefined,
       priceInr: Number(fd.get("priceInr")),
       compareAtInr: fd.get("compareAtInr") ? Number(fd.get("compareAtInr")) : undefined,
       categorySlug: String(fd.get("categorySlug")),
@@ -62,12 +89,7 @@ export function ProductForm(props: Props) {
       sizeChartImage: sizeChartUrl ?? undefined,
       images: imageUrls,
       badge: String(fd.get("badge") || "") || undefined,
-      specs: {
-        material: String(fd.get("material")),
-        dimensions: String(fd.get("dimensions")),
-        care: String(fd.get("care")),
-        origin: String(fd.get("origin")),
-      },
+      specs,
     };
 
     const isEdit = props.mode === "edit";
@@ -121,13 +143,18 @@ export function ProductForm(props: Props) {
       </div>
 
       <div>
-        <label className="block text-sm mb-2">Description</label>
+        <label className="block text-sm mb-2">Description &amp; specifications</label>
+        <p className="text-xs text-muted mb-2">
+          Paste supplier text with one line per field, e.g.{" "}
+          <span className="text-charcoal">Dial Color: Rose Gold</span>. Optional intro lines
+          without a colon appear above the spec grid on the product page.
+        </p>
         <textarea
           name="description"
-          required
-          rows={4}
-          defaultValue={initial?.description}
-          className="w-full border border-line p-3 text-sm bg-paper"
+          rows={14}
+          defaultValue={initial ? formatProductTextForEditor(initial) : undefined}
+          placeholder={`NEW ARRIVAL FANCY WOMEN WATCH\n\nName: Example Watch\nStrap Material: Alloy\nDial Color: Rose Gold\nCountry of Origin: India`}
+          className="w-full border border-line p-3 text-sm bg-paper font-mono text-[13px] leading-relaxed"
         />
       </div>
 
