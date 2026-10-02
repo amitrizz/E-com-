@@ -15,15 +15,15 @@ function getClientPromise(): Promise<MongoClient> {
   if (!uri) {
     return Promise.reject(new Error("DATABASE_URL is not configured"));
   }
-  if (process.env.NODE_ENV === "development") {
-    if (!global._mongoClientPromise) {
-      const client = new MongoClient(uri);
-      global._mongoClientPromise = client.connect();
-    }
-    return global._mongoClientPromise;
+  if (!global._mongoClientPromise) {
+    const client = new MongoClient(uri, {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 12_000,
+      connectTimeoutMS: 12_000,
+    });
+    global._mongoClientPromise = client.connect();
   }
-  const client = new MongoClient(uri);
-  return client.connect();
+  return global._mongoClientPromise;
 }
 
 export async function getDb(): Promise<Db> {

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { getBearerUser, requireAdmin } from "@/lib/auth-server";
+import { MAX_UPLOAD_BYTES } from "@/lib/image-upload-limits";
 import { uploadProductImage } from "@/lib/product-media";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const MAX_FILES = 6;
 const ALLOWED = new Set([
@@ -42,6 +44,14 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error: `Unsupported type: ${file.type || "unknown"}. Use JPEG, PNG, WebP, GIF, or AVIF.`,
+          },
+          { status: 400 }
+        );
+      }
+      if (file.size > MAX_UPLOAD_BYTES) {
+        return NextResponse.json(
+          {
+            error: `“${file.name}” exceeds ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB. Compress or use JPEG/PNG.`,
           },
           { status: 400 }
         );

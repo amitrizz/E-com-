@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { authHeaders, useAuth } from "@/hooks/auth-context";
+import { uploadAdminImages } from "@/lib/admin-upload-client";
+import { formatMaxUploadMb } from "@/lib/image-upload-limits";
+import { useAuth } from "@/hooks/auth-context";
 
 type Props = {
   value: string[];
@@ -20,21 +22,14 @@ export function ProductImageUpload({ value, onChange }: Props) {
     setError(null);
     setUploading(true);
     try {
-      const formData = new FormData();
-      Array.from(files).forEach((f) => formData.append("files", f));
-      const res = await fetch("/api/admin/upload-images", {
-        method: "POST",
-        headers: authHeaders(token),
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Upload failed");
-        return;
+      const result = await uploadAdminImages(Array.from(files), token);
+      if (result.error) {
+        setError(result.error);
+      } else if (result.urls?.length) {
+        onChange([...value, ...result.urls]);
+      } else {
+        setError("Upload failed.");
       }
-      onChange([...value, ...(data.urls as string[])]);
-    } catch {
-      setError("Upload failed. Try again.");
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -49,7 +44,7 @@ export function ProductImageUpload({ value, onChange }: Props) {
     <div>
       <label className="block text-sm mb-2">Product images</label>
       <p className="text-xs text-muted mb-3">
-        Upload JPEG, PNG, WebP, GIF, or AVIF. We optimize and store as WebP in MongoDB (max 6 images, 8MB each).
+        Upload JPEG, PNG, WebP, GIF, or AVIF. Stored as WebP in MongoDB (max 6 images, {formatMaxUploadMb()} each).
       </p>
 
       <div className="flex flex-wrap gap-3 mb-4">

@@ -1,26 +1,59 @@
 import { Readable } from "stream";
 import { GridFSBucket, ObjectId } from "mongodb";
 import sharp from "sharp";
+import { MAX_UPLOAD_BYTES } from "@/lib/image-upload-limits";
 import { getDb } from "@/lib/mongodb";
 
 const BUCKET = "kashu_product_media";
 const MAX_WIDTH = 1400;
 const WEBP_QUALITY = 82;
-const MAX_INPUT_BYTES = 8 * 1024 * 1024;
+const OPTIMIZE_TIMEOUT_MS = 45_000;
 
 export function mediaUrl(fileId: ObjectId | string): string {
   return `/api/media/${String(fileId)}`;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise
+      .then((v) => {
+        clearTimeout(timer);
+        resolve(v);
+      })
+      .catch((e) => {
+        clearTimeout(timer);
+        reject(e);
+      });
+  });
+}
+
 export async function optimizeImageToWebp(input: Buffer): Promise<Buffer> {
-  if (input.length > MAX_INPUT_BYTES) {
-    throw new Error("Image is too large. Maximum size is 8MB.");
+  if (input.length > MAX_UPLOAD_BYTES) {
+    throw new Error(`Image is too large. Maximum size is ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB.`);
   }
-  return sharp(input)
+
+  const work = sharp(input, { failOn: "error", animated: true })
     .rotate()
     .resize({ width: MAX_WIDTH, height: MAX_WIDTH, fit: "inside", withoutEnlargement: true })
-    .webp({ quality: WEBP_QUALITY, effort: 4 })
+    .webp({ quality: WEBP_QUALITY, effort: 2 })
     .toBuffer();
+
+  try {
+    return await withTimeout(
+      work,
+      OPTIMIZE_TIMEOUT_MS,
+      "Image processing timed out. Try a smaller JPEG or PNG, or compress the file."
+    );
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Could not process image.";
+    if (/avif|heif|heic|unsupported|Vips/i.test(msg)) {
+      throw new Error(
+        "Could not read this image format on the server. Export as JPEG or PNG and upload again."
+      );
+    }
+    throw e instanceof Error ? e : new Error(msg);
+  }
 }
 
 export async function uploadProductImage(

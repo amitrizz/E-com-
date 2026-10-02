@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { authHeaders, useAuth } from "@/hooks/auth-context";
+import { uploadAdminImages } from "@/lib/admin-upload-client";
+import { useAuth } from "@/hooks/auth-context";
 
 type Props = {
   value: string | null;
@@ -21,22 +22,13 @@ export function SizeChartUpload({ value, onChange }: Props) {
     setError(null);
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("files", file);
-      const res = await fetch("/api/admin/upload-images", {
-        method: "POST",
-        headers: authHeaders(token),
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Upload failed");
+      const result = await uploadAdminImages([file], token);
+      if (result.error) {
+        setError(result.error);
         return;
       }
-      const url = (data.urls as string[])?.[0];
+      const url = result.urls?.[0];
       if (url) onChange(url);
-    } catch {
-      setError("Upload failed. Try again.");
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
