@@ -6,6 +6,7 @@ import { ProductPurchaseActions } from "@/components/product/product-purchase-ac
 import { ProductSizeGuide } from "@/components/product/product-size-guide";
 import { ProductStickyBar } from "@/components/product/product-sticky-bar";
 import { PURCHASE_ANCHOR_ID } from "@/lib/constants";
+import { AdminProductEditLink } from "@/components/admin/admin-product-edit-link";
 import { ProductCard } from "@/components/product/product-card";
 import { formatInr } from "@/lib/currency";
 import { getProductBySlug, getProducts } from "@/lib/api";
@@ -47,7 +48,10 @@ export default async function ProductPage({ params }: Props) {
           {product.badge && (
             <span className="text-[10px] uppercase tracking-widest text-accent">{product.badge}</span>
           )}
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-ink mt-2">{product.name}</h1>
+          <div className="flex flex-wrap items-start justify-between gap-3 mt-2">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-ink">{product.name}</h1>
+            <AdminProductEditLink slug={product.slug} variant="inline" />
+          </div>
           <p className="mt-3 sm:mt-4 text-lg">
             {formatInr(product.priceInr)}
             {product.compareAtInr && (

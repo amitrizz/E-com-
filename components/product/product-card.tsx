@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AdminProductEditLink } from "@/components/admin/admin-product-edit-link";
 import { formatInr } from "@/lib/currency";
 import type { Product } from "@/types/product";
 
@@ -10,7 +11,8 @@ export function ProductCard({ product }: { product: Product }) {
     imageSrc.startsWith("/api/media") || imageSrc.startsWith("http");
 
   return (
-    <article className="group">
+    <article className="group relative">
+      <AdminProductEditLink slug={product.slug} variant="card" />
       <Link href={`/products/${product.slug}`} className="block">
         <div className="relative aspect-[4/5] overflow-hidden bg-stone">
           <Image
