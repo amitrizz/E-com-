@@ -78,6 +78,25 @@ export async function uploadProductImage(
   return mediaUrl(id);
 }
 
+const MEDIA_PATH = /^\/api\/media\/([a-f0-9]{24})$/i;
+
+export async function deleteProductMediaUrl(url: string): Promise<void> {
+  const match = url.trim().match(MEDIA_PATH);
+  if (!match || !ObjectId.isValid(match[1])) return;
+  const db = await getDb();
+  const bucket = new GridFSBucket(db, { bucketName: BUCKET });
+  try {
+    await bucket.delete(new ObjectId(match[1]));
+  } catch {
+    /* file may already be gone */
+  }
+}
+
+export async function deleteProductMediaUrls(urls: string[]): Promise<void> {
+  const unique = [...new Set(urls)];
+  await Promise.all(unique.map((u) => deleteProductMediaUrl(u)));
+}
+
 export async function openProductImageStream(fileId: string) {
   if (!ObjectId.isValid(fileId)) return null;
   const db = await getDb();

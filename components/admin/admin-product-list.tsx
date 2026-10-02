@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { formatInr } from "@/lib/currency";
 import { authHeaders, useAuth } from "@/hooks/auth-context";
 import type { CatalogProduct } from "@/lib/catalog";
@@ -12,6 +12,26 @@ export function AdminProductList() {
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deletingSlug, setDeletingSlug] = useState<string | null>(null);
+
+  const loadProducts = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const r = await fetch("/api/admin/products", { headers: authHeaders(token) });
+      const d = await r.json();
+      if (d.products) {
+        setProducts(d.products as CatalogProduct[]);
+        setError(null);
+      } else {
+        setError(d.error ?? "Failed to load");
+      }
+    } catch {
+      setError("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -20,20 +40,39 @@ export function AdminProductList() {
       setError("Sign in as admin to view products.");
       return;
     }
-    setLoading(true);
-    fetch("/api/admin/products", { headers: authHeaders(token) })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.products) {
-          setProducts(d.products as CatalogProduct[]);
-          setError(null);
-        } else {
-          setError(d.error ?? "Failed to load");
-        }
-      })
-      .catch(() => setError("Failed to load products"))
-      .finally(() => setLoading(false));
-  }, [token, status]);
+    loadProducts();
+  }, [token, status, loadProducts]);
+
+  async function onDelete(p: CatalogProduct) {
+    if (p.catalogSource !== "database") {
+      setError("Demo catalog items cannot be deleted. They are built into the app.");
+      return;
+    }
+    const ok = window.confirm(
+      `Delete “${p.name}” from the shop?\n\nUploaded images in MongoDB will be removed. If this replaced a demo product, the demo version will show again.`
+    );
+    if (!ok || !token) return;
+
+    setDeletingSlug(p.slug);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/products/${p.slug}`, {
+        method: "DELETE",
+        headers: authHeaders(token),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Could not delete");
+        return;
+      }
+      setProducts((list) => list.filter((item) => item.slug !== p.slug));
+      await loadProducts();
+    } catch {
+      setError("Could not delete product.");
+    } finally {
+      setDeletingSlug(null);
+    }
+  }
 
   return (
     <div>
@@ -41,7 +80,7 @@ export function AdminProductList() {
         <div>
           <h1 className="font-display text-3xl sm:text-4xl">Products</h1>
           <p className="text-sm text-muted mt-2">
-            Same catalog as the shop — demo items and MongoDB products. Edit any listing below.
+            Same catalog as the shop — demo items and MongoDB products. Edit any listing; delete database items only.
           </p>
         </div>
         <Link
@@ -97,9 +136,29 @@ export function AdminProductList() {
                 >
                   Edit
                 </Link>
-                <Link href={`/products/${p.slug}`} className="h-10 px-4 inline-flex items-center text-muted underline">
+                <Link
+                  href={`/products/${p.slug}`}
+                  className="h-10 px-4 inline-flex items-center text-muted underline"
+                >
                   View store
                 </Link>
+                {p.catalogSource === "database" ? (
+                  <button
+                    type="button"
+                    disabled={deletingSlug === p.slug}
+                    onClick={() => onDelete(p)}
+                    className="h-10 px-4 inline-flex items-center border border-red-800/40 text-red-800 disabled:opacity-50"
+                  >
+                    {deletingSlug === p.slug ? "Deleting…" : "Delete"}
+                  </button>
+                ) : (
+                  <span
+                    className="h-10 px-4 inline-flex items-center text-xs text-muted"
+                    title="Built-in demo products cannot be deleted"
+                  >
+                    —
+                  </span>
+                )}
               </div>
             </li>
           ))}

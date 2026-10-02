@@ -86,6 +86,15 @@ export async function upsertDbProductBySlug(
   return docToProduct({ ...doc, _id: result.insertedId });
 }
 
+export async function deleteDbProductBySlug(slug: string): Promise<Product | null> {
+  const db = await getDb();
+  const doc = await db.collection(COLLECTION).findOne({ slug });
+  if (!doc) return null;
+  const product = docToProduct(doc as Record<string, unknown>);
+  await db.collection(COLLECTION).deleteOne({ slug });
+  return product;
+}
+
 export async function createDbProduct(input: CreateProductInput): Promise<Product> {
   const db = await getDb();
   let baseSlug = slugify(input.name);

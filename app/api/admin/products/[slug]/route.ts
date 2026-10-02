@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getBearerUser, requireAdmin } from "@/lib/auth-server";
 import { getCatalogProductBySlug } from "@/lib/catalog";
+import { deleteProductMediaUrls } from "@/lib/product-media";
 import { revalidateStorefrontCatalog } from "@/lib/revalidate-storefront";
-import { upsertDbProductBySlug } from "@/lib/product-repository";
+import { deleteDbProductBySlug, upsertDbProductBySlug } from "@/lib/product-repository";
 import type { UpdateProductInput } from "@/lib/product-repository";
 
 type RouteContext = { params: Promise<{ slug: string }> };
@@ -68,5 +69,37 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.json({ error: "Could not save product." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  try {
+    requireAdmin(await getBearerUser(request.headers.get("authorization")));
+    const { slug } = await context.params;
+
+    const removed = await deleteDbProductBySlug(slug);
+    if (!removed) {
+      return NextResponse.json(
+        {
+          error:
+            "This demo catalog item is not in the database. Only saved or edited products can be deleted.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const mediaUrls = [
+      ...removed.images,
+      ...(removed.sizeChartImage ? [removed.sizeChartImage] : []),
+    ];
+    await deleteProductMediaUrls(mediaUrls);
+    revalidateStorefrontCatalog(removed);
+
+    return NextResponse.json({ ok: true, slug });
+  } catch (e) {
+    if (e instanceof Error && e.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.json({ error: "Could not delete product." }, { status: 500 });
   }
 }
