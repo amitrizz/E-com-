@@ -1,69 +1,108 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Hero } from "@/components/home/hero";
+import { Newsletter } from "@/components/home/newsletter";
+import { ProductCard } from "@/components/product/product-card";
+import { getBestsellers, getCategories, getCollections, getNewArrivals } from "@/lib/api";
 
-export default function Home() {
+export default async function HomePage() {
+  const [bestsellers, newArrivals, categories, collections] = await Promise.all([
+    getBestsellers(4),
+    getNewArrivals(4),
+    getCategories(),
+    getCollections(),
+  ]);
+  const featured = collections[0];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <Hero />
+      <section className="container-kashu py-14 sm:py-20 lg:py-32">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-ink max-w-lg leading-tight">
+            Best sellers
+          </h2>
+          <Link href="/shop" className="text-sm text-muted hover:text-ink underline-offset-4 hover:underline">
+            View all
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 sm:gap-x-4 gap-y-8 sm:gap-y-10 md:gap-x-6">
+          {bestsellers.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-ink text-paper">
+        <div className="container-kashu py-20 md:py-32 grid md:grid-cols-12 gap-10 items-center">
+          <div className="md:col-span-5 md:col-start-1 order-2 md:order-1">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-stone/80 mb-4">Featured</p>
+            <h2 className="font-display text-4xl md:text-5xl leading-tight">{featured.name}</h2>
+            <p className="mt-4 text-stone/90 text-sm md:text-base max-w-md">{featured.description}</p>
+            <Link
+              href={`/collections/${featured.slug}`}
+              className="inline-block mt-8 text-sm border-b border-accent text-paper pb-1"
+            >
+              Explore collection
+            </Link>
+          </div>
+          <div className="md:col-span-6 md:col-start-7 relative aspect-[3/2] order-1 md:order-2">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src={featured.heroImage}
+              alt={featured.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="container-kashu py-20 md:py-32">
+        <h2 className="font-display text-4xl md:text-5xl text-ink mb-12">New arrivals</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {newArrivals.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-line">
+        <div className="container-kashu py-20 md:py-28">
+          <h2 className="font-display text-3xl md:text-4xl mb-10">Shop by category</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 auto-rows-fr">
+            {categories.map((cat, i) => (
+              <Link
+                key={cat.slug}
+                href={`/category/${cat.slug}`}
+                className={`group relative overflow-hidden bg-stone min-h-[140px] sm:min-h-[180px] aspect-[4/5] ${
+                  i === 0 ? "col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 lg:col-span-2 lg:row-span-2" : ""
+                }`}
+              >
+                <Image src={cat.image} alt={cat.name} fill className="object-cover group-hover:scale-[1.02] transition-transform duration-500" sizes="(max-width:640px) 50vw, 20vw" />
+                <span className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 text-paper font-display text-lg sm:text-2xl drop-shadow-sm">
+                  {cat.name}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container-kashu py-20 md:py-32 max-w-3xl">
+        <h2 className="font-display text-4xl text-ink">Made slowly, worn daily</h2>
+        <p className="mt-6 text-muted leading-relaxed">
+          Kashu began in a Mumbai studio with a simple brief: build leather goods that survive monsoon
+          commutes and still look composed at dinner. We work with small ateliers in Kanpur and
+          Chennai, favor vegetable tanning, and release in limited runs so nothing sits in warehouse
+          limbo.
+        </p>
+        <Link href="/about" className="inline-block mt-8 text-sm text-ink border-b border-line pb-1">
+          Read our story
+        </Link>
+      </section>
+
+      <Newsletter />
+    </>
   );
 }

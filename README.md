@@ -1,5 +1,12 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment
+
+Copy `.env.example` to `.env.local` and set `DATABASE_URL` (MongoDB Atlas).  
+Server code should use `getDb()` from `lib/mongodb.ts`. Never commit `.env.local`.
+
+Check connectivity (dev server running): `GET /api/health/db`
+
 ## Getting Started
 
 First, run the development server:
