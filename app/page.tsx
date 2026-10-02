@@ -5,6 +5,8 @@ import { Newsletter } from "@/components/home/newsletter";
 import { ProductCard } from "@/components/product/product-card";
 import { getBestsellers, getCategories, getCollections, getNewArrivals } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [bestsellers, newArrivals, categories, collections] = await Promise.all([
     getBestsellers(4),
@@ -28,7 +30,7 @@ export default async function HomePage() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 sm:gap-x-4 gap-y-8 sm:gap-y-10 md:gap-x-6">
           {bestsellers.map((p) => (
-            <ProductCard key={p.id} product={p} />
+            <ProductCard key={p.slug} product={p} />
           ))}
         </div>
       </section>
@@ -62,7 +64,7 @@ export default async function HomePage() {
         <h2 className="font-display text-4xl md:text-5xl text-ink mb-12">New arrivals</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {newArrivals.map((p) => (
-            <ProductCard key={p.id} product={p} />
+            <ProductCard key={p.slug} product={p} />
           ))}
         </div>
       </section>

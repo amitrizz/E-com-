@@ -5,15 +5,20 @@ import type { Product } from "@/types/product";
 
 export function ProductCard({ product }: { product: Product }) {
   const soldOut = product.stock === 0;
+  const imageSrc = product.images[0];
+  const gridImageUnoptimized =
+    imageSrc.startsWith("/api/media") || imageSrc.startsWith("http");
+
   return (
     <article className="group">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="relative aspect-[4/5] overflow-hidden bg-stone">
           <Image
-            src={product.images[0]}
+            src={imageSrc}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
+            unoptimized={gridImageUnoptimized}
             className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]"
           />
           {product.badge && (

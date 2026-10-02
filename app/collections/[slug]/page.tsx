@@ -6,6 +6,8 @@ import { getCollectionBySlug, getProductsByCollection } from "@/lib/api";
 
 type Props = { params: Promise<{ slug: string }> };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const c = await getCollectionBySlug(slug);
@@ -30,7 +32,7 @@ export default async function CollectionPage({ params }: Props) {
       </div>
       <div className="container-kashu py-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard key={p.slug} product={p} />
         ))}
       </div>
     </>

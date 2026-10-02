@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBearerUser, requireAdmin } from "@/lib/auth-server";
 import { listCatalogProducts } from "@/lib/catalog";
+import { revalidateStorefrontCatalog } from "@/lib/revalidate-storefront";
 import { createDbProduct } from "@/lib/product-repository";
 import type { CreateProductInput } from "@/lib/product-repository";
 
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
           ? body.badge
           : undefined,
     });
+    revalidateStorefrontCatalog(product);
     return NextResponse.json({ product }, { status: 201 });
   } catch (e) {
     if (e instanceof Error && e.message === "Unauthorized") {

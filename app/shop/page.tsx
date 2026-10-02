@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Shop",
 };
 
+/** Always read MongoDB + catalog merge so edits match product pages. */
+export const dynamic = "force-dynamic";
+
 export default async function ShopPage() {
   const products = await getProducts();
   return (
@@ -18,7 +21,7 @@ export default async function ShopPage() {
       </header>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 sm:gap-x-4 gap-y-8 sm:gap-y-10">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard key={p.slug} product={p} />
         ))}
       </div>
     </div>

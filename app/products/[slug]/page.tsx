@@ -12,6 +12,8 @@ import { getProductBySlug, getProducts } from "@/lib/api";
 
 type Props = { params: Promise<{ slug: string }> };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
@@ -77,7 +79,7 @@ export default async function ProductPage({ params }: Props) {
           <h2 className="font-display text-3xl mb-8">You may also like</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.slug} product={p} />
             ))}
           </div>
         </section>

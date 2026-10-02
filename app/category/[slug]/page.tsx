@@ -5,6 +5,8 @@ import { getCategoryBySlug, getProductsByCategory } from "@/lib/api";
 
 type Props = { params: Promise<{ slug: string }> };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cat = await getCategoryBySlug(slug);
@@ -23,7 +25,7 @@ export default async function CategoryPage({ params }: Props) {
       <p className="mt-4 text-muted max-w-xl">{category.description}</p>
       <div className="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard key={p.slug} product={p} />
         ))}
       </div>
     </div>

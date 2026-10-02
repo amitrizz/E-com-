@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBearerUser, requireAdmin } from "@/lib/auth-server";
 import { getCatalogProductBySlug } from "@/lib/catalog";
+import { revalidateStorefrontCatalog } from "@/lib/revalidate-storefront";
 import { upsertDbProductBySlug } from "@/lib/product-repository";
 import type { UpdateProductInput } from "@/lib/product-repository";
 
@@ -58,6 +59,8 @@ export async function PUT(request: Request, context: RouteContext) {
           ? body.badge
           : undefined,
     });
+
+    revalidateStorefrontCatalog(product);
 
     return NextResponse.json({ product });
   } catch (e) {
