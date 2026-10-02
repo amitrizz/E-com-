@@ -54,6 +54,7 @@ export function AddToBagButton({
             slug: product.slug,
             name: product.name,
             priceInr: product.priceInr,
+            compareAtInr: product.compareAtInr,
             image: product.images[0],
             quantity: 1,
             color: resolvedColor,

@@ -101,13 +101,30 @@ export function OrderHistory() {
                       : ""}
                   </p>
                 </div>
-                <p className="shrink-0">{formatInr(item.priceInr * item.quantity)}</p>
+                <div className="shrink-0 text-right">
+                  <p>{formatInr(item.priceInr * item.quantity)}</p>
+                  {item.compareAtInr && item.compareAtInr > item.priceInr && (
+                    <p className="text-[10px] text-muted line-through">
+                      {formatInr(item.compareAtInr * item.quantity)}
+                    </p>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
-          <div className="mt-4 pt-4 border-t border-line flex justify-between text-sm">
-            <span className="text-muted">Cash on delivery · {order.address.city}</span>
-            <span className="font-medium">{formatInr(order.totalInr)}</span>
+          <div className="mt-4 pt-4 border-t border-line text-sm space-y-1">
+            <div className="flex justify-between text-muted">
+              <span>Subtotal</span>
+              <span>{formatInr(order.subtotalInr)}</span>
+            </div>
+            <div className="flex justify-between text-muted">
+              <span>Shipping</span>
+              <span>{order.shippingInr === 0 ? "Free" : formatInr(order.shippingInr)}</span>
+            </div>
+            <div className="flex justify-between font-medium pt-1">
+              <span className="text-muted">Cash on delivery · {order.address.city}</span>
+              <span>{formatInr(order.totalInr)}</span>
+            </div>
           </div>
         </li>
       ))}

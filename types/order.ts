@@ -2,7 +2,9 @@ export type OrderLine = {
   productId: string;
   slug: string;
   name: string;
+  /** Sale / discount price charged (final unit price). */
   priceInr: number;
+  compareAtInr?: number;
   quantity: number;
   image: string;
   color?: string;

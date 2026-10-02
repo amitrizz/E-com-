@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import type { Order, OrderAddress, OrderLine } from "@/types/order";
 
@@ -59,6 +60,26 @@ export async function listOrdersForUser(userId: string, email: string): Promise<
     .sort({ createdAt: -1 })
     .toArray();
   return docs.map((d) => docToOrder(d as Record<string, unknown>));
+}
+
+export async function listAllOrders(): Promise<Order[]> {
+  const db = await getDb();
+  const docs = await db.collection(COLLECTION).find({}).sort({ createdAt: -1 }).toArray();
+  return docs.map((d) => docToOrder(d as Record<string, unknown>));
+}
+
+export async function updateOrderStatus(
+  orderId: string,
+  status: Order["status"]
+): Promise<Order | null> {
+  if (!ObjectId.isValid(orderId)) return null;
+  const db = await getDb();
+  const result = await db.collection(COLLECTION).findOneAndUpdate(
+    { _id: new ObjectId(orderId) },
+    { $set: { status, updatedAt: new Date() } },
+    { returnDocument: "after" }
+  );
+  return result ? docToOrder(result as Record<string, unknown>) : null;
 }
 
 export async function getOrderByNumber(

@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 
 const tabs = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/orders", label: "Orders" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/products/new", label: "Add product" },
 ];
 
 function isActive(pathname: string, href: string) {
   if (href === "/admin/products") return pathname === "/admin/products";
+  if (href === "/admin/orders") return pathname === "/admin/orders";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

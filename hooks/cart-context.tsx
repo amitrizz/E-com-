@@ -16,6 +16,7 @@ export type CartLine = {
   slug: string;
   name: string;
   priceInr: number;
+  compareAtInr?: number;
   image: string;
   quantity: number;
   color?: string;

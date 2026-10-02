@@ -13,6 +13,13 @@ export default function AdminHomePage() {
 
       <div className="mt-10 grid sm:grid-cols-2 gap-4">
         <Link
+          href="/admin/orders"
+          className="block border border-line p-6 hover:border-charcoal transition-colors"
+        >
+          <p className="text-sm font-medium text-ink">Orders</p>
+          <p className="text-xs text-muted mt-2">Process confirmed COD orders and mark delivered.</p>
+        </Link>
+        <Link
           href="/admin/products"
           className="block border border-line p-6 hover:border-charcoal transition-colors"
         >

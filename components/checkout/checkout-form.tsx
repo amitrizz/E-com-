@@ -95,6 +95,7 @@ export function CheckoutForm() {
         slug: l.slug,
         name: l.name,
         priceInr: l.priceInr,
+        compareAtInr: l.compareAtInr,
         quantity: l.quantity,
         image: l.image,
         color: l.color,
