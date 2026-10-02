@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatInr } from "@/lib/currency";
-import { FREE_SHIPPING_THRESHOLD_INR } from "@/lib/constants";
 import { useCart } from "@/hooks/cart-context";
 import { formatCartVariant } from "@/lib/cart-line";
 
@@ -25,16 +24,10 @@ export default function CartPage() {
     );
   }
 
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD_INR - subtotal);
-
   return (
     <div className="container-kashu py-12 md:py-20 max-w-3xl">
       <h1 className="font-display text-4xl mb-10">Bag</h1>
-      {remaining > 0 && (
-        <p className="text-sm text-muted mb-8">
-          Add {formatInr(remaining)} more for complimentary shipping.
-        </p>
-      )}
+      <p className="text-sm text-muted mb-8">Complimentary shipping on every order.</p>
       <ul className="divide-y divide-line">
         {lines.map((line) => (
           <li key={line.lineKey} className="flex gap-4 py-6">

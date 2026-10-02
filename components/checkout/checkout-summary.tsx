@@ -2,11 +2,9 @@
 
 import Image from "next/image";
 import { formatInr } from "@/lib/currency";
-import { FREE_SHIPPING_THRESHOLD_INR } from "@/lib/constants";
 import type { CartLine } from "@/hooks/cart-context";
 import { formatCartVariant } from "@/lib/cart-line";
-
-const SHIPPING_FLAT = 149;
+import { getCheckoutTotal, getShippingInr } from "@/lib/checkout-totals";
 
 export function CheckoutSummary({
   lines,
@@ -15,8 +13,8 @@ export function CheckoutSummary({
   lines: CartLine[];
   subtotal: number;
 }) {
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD_INR ? 0 : SHIPPING_FLAT;
-  const total = subtotal + shipping;
+  const shipping = getShippingInr(subtotal);
+  const total = getCheckoutTotal(subtotal);
 
   return (
     <aside className="border border-line bg-stone/20 p-6 lg:p-8 h-fit">
@@ -59,6 +57,5 @@ export function CheckoutSummary({
 }
 
 export function computeCheckoutTotal(subtotal: number): number {
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD_INR ? 0 : SHIPPING_FLAT;
-  return subtotal + shipping;
+  return getCheckoutTotal(subtotal);
 }
