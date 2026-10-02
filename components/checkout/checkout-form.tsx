@@ -97,6 +97,8 @@ export function CheckoutForm() {
         priceInr: l.priceInr,
         quantity: l.quantity,
         image: l.image,
+        color: l.color,
+        size: l.size,
       })),
       address: {
         fullName: contact.fullName,

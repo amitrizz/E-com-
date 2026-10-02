@@ -14,7 +14,7 @@ const buyBase =
   "inline-flex items-center justify-center border border-ink bg-paper text-ink font-medium touch-target w-full";
 
 export function ProductPurchaseActions({ product, variant = "inline" }: Props) {
-  const { selectedSize } = useProductPurchase();
+  const { selectedColor, selectedSize } = useProductPurchase();
 
   if (product.stock === 0) {
     return <p className="text-sm text-muted mt-6">This item is sold out online.</p>;
@@ -26,7 +26,13 @@ export function ProductPurchaseActions({ product, variant = "inline" }: Props) {
 
   return (
     <div className={grid}>
-      <AddToBagButton product={product} size={selectedSize} compact={isSticky} fullWidth />
+      <AddToBagButton
+        product={product}
+        color={selectedColor}
+        size={selectedSize}
+        compact={isSticky}
+        fullWidth
+      />
       <Link href="/checkout" className={`${buyBase} ${height}`}>
         Buy now
       </Link>

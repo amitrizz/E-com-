@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductPurchaseProvider } from "@/components/product/product-purchase-context";
 import { ProductPurchaseActions } from "@/components/product/product-purchase-actions";
 import { ProductSizeGuide } from "@/components/product/product-size-guide";
@@ -34,16 +34,7 @@ export default async function ProductPage({ params }: Props) {
   return (
     <div className="container-kashu py-8 sm:py-10 md:py-16 pb-[5.5rem] xl:pb-16">
       <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-16">
-        <div className="relative w-full aspect-[4/5] max-h-[min(70vh,520px)] sm:max-h-[min(75vh,600px)] md:max-h-none overflow-hidden bg-stone">
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-        </div>
+        <ProductImageGallery images={product.images} alt={product.name} />
         <div className="md:pt-2 lg:pt-8 min-w-0">
           {product.badge && (
             <span className="text-[10px] uppercase tracking-widest text-accent">{product.badge}</span>

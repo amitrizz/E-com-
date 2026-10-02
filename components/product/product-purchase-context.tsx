@@ -5,6 +5,8 @@ import type { Product } from "@/types/product";
 
 type Ctx = {
   product: Product;
+  selectedColor: string | undefined;
+  setSelectedColor: (color: string | undefined) => void;
   selectedSize: string | undefined;
   setSelectedSize: (size: string | undefined) => void;
 };
@@ -18,13 +20,22 @@ export function ProductPurchaseProvider({
   product: Product;
   children: React.ReactNode;
 }) {
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(
+    product.colors?.[0]
+  );
   const [selectedSize, setSelectedSize] = useState<string | undefined>(
     product.sizes?.[0]
   );
 
   const value = useMemo(
-    () => ({ product, selectedSize, setSelectedSize }),
-    [product, selectedSize]
+    () => ({
+      product,
+      selectedColor,
+      setSelectedColor,
+      selectedSize,
+      setSelectedSize,
+    }),
+    [product, selectedColor, selectedSize]
   );
 
   return (

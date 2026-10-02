@@ -4,6 +4,7 @@ import Image from "next/image";
 import { formatInr } from "@/lib/currency";
 import { FREE_SHIPPING_THRESHOLD_INR } from "@/lib/constants";
 import type { CartLine } from "@/hooks/cart-context";
+import { formatCartVariant } from "@/lib/cart-line";
 
 const SHIPPING_FLAT = 149;
 
@@ -22,13 +23,18 @@ export function CheckoutSummary({
       <h2 className="font-display text-2xl text-ink mb-6">Order summary</h2>
       <ul className="space-y-4 mb-6 max-h-64 overflow-y-auto">
         {lines.map((line) => (
-          <li key={line.productId} className="flex gap-3 text-sm">
+          <li key={line.lineKey} className="flex gap-3 text-sm">
             <div className="relative w-14 aspect-[4/5] bg-stone shrink-0">
-              <Image src={line.image} alt="" fill className="object-cover" sizes="56px" />
+              <Image src={line.image} alt="" fill className="object-cover" sizes="56px" unoptimized />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-ink truncate">{line.name}</p>
-              <p className="text-muted">Qty {line.quantity}</p>
+              <p className="text-muted text-xs mt-0.5">
+                Qty {line.quantity}
+                {formatCartVariant(line.color, line.size)
+                  ? ` · ${formatCartVariant(line.color, line.size)}`
+                  : ""}
+              </p>
             </div>
             <p className="text-charcoal shrink-0">{formatInr(line.priceInr * line.quantity)}</p>
           </li>

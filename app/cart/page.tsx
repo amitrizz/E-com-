@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatInr } from "@/lib/currency";
 import { FREE_SHIPPING_THRESHOLD_INR } from "@/lib/constants";
 import { useCart } from "@/hooks/cart-context";
+import { formatCartVariant } from "@/lib/cart-line";
 
 export default function CartPage() {
   const { lines, subtotal, setQuantity, removeLine, hydrated } = useCart();
@@ -36,7 +37,7 @@ export default function CartPage() {
       )}
       <ul className="divide-y divide-line">
         {lines.map((line) => (
-          <li key={line.productId} className="flex gap-4 py-6">
+          <li key={line.lineKey} className="flex gap-4 py-6">
             <div className="relative w-24 aspect-[4/5] bg-stone shrink-0">
               <Image src={line.image} alt="" fill className="object-cover" sizes="96px" />
             </div>
@@ -45,17 +46,20 @@ export default function CartPage() {
                 {line.name}
               </Link>
               <p className="text-sm text-muted mt-1">{formatInr(line.priceInr)}</p>
+              {formatCartVariant(line.color, line.size) && (
+                <p className="text-xs text-muted mt-1">{formatCartVariant(line.color, line.size)}</p>
+              )}
               <div className="mt-3 flex items-center gap-3 text-sm">
-                <label className="sr-only" htmlFor={`qty-${line.productId}`}>Quantity</label>
+                <label className="sr-only" htmlFor={`qty-${line.lineKey}`}>Quantity</label>
                 <input
-                  id={`qty-${line.productId}`}
+                  id={`qty-${line.lineKey}`}
                   type="number"
                   min={1}
                   value={line.quantity}
-                  onChange={(e) => setQuantity(line.productId, Number(e.target.value))}
+                  onChange={(e) => setQuantity(line.lineKey, Number(e.target.value))}
                   className="w-16 border border-line h-9 px-2"
                 />
-                <button type="button" className="text-muted hover:text-ink" onClick={() => removeLine(line.productId)}>
+                <button type="button" className="text-muted hover:text-ink" onClick={() => removeLine(line.lineKey)}>
                   Remove
                 </button>
               </div>

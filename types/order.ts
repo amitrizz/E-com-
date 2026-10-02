@@ -5,6 +5,8 @@ export type OrderLine = {
   priceInr: number;
   quantity: number;
   image: string;
+  color?: string;
+  size?: string;
 };
 
 export type OrderAddress = {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatInr } from "@/lib/currency";
 import { authHeaders, useAuth } from "@/hooks/auth-context";
+import { formatCartVariant } from "@/lib/cart-line";
 import type { Order } from "@/types/order";
 
 const STATUS_LABEL: Record<Order["status"], string> = {
@@ -84,8 +85,8 @@ export function OrderHistory() {
             </span>
           </div>
           <ul className="space-y-3">
-            {order.items.map((item) => (
-              <li key={item.productId} className="flex gap-3 text-sm">
+            {order.items.map((item, idx) => (
+              <li key={`${item.productId}-${idx}`} className="flex gap-3 text-sm">
                 <div className="relative w-12 aspect-[4/5] bg-stone shrink-0">
                   <Image src={item.image} alt="" fill className="object-cover" sizes="48px" />
                 </div>
@@ -93,7 +94,12 @@ export function OrderHistory() {
                   <Link href={`/products/${item.slug}`} className="hover:underline truncate block">
                     {item.name}
                   </Link>
-                  <p className="text-muted">Qty {item.quantity}</p>
+                  <p className="text-muted text-xs">
+                    Qty {item.quantity}
+                    {formatCartVariant(item.color, item.size)
+                      ? ` · ${formatCartVariant(item.color, item.size)}`
+                      : ""}
+                  </p>
                 </div>
                 <p className="shrink-0">{formatInr(item.priceInr * item.quantity)}</p>
               </li>

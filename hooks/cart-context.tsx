@@ -8,8 +8,10 @@ import {
   useMemo,
   useReducer,
 } from "react";
+import { buildCartLineKey } from "@/lib/cart-line";
 
 export type CartLine = {
+  lineKey: string;
   productId: string;
   slug: string;
   name: string;
@@ -25,39 +27,47 @@ type State = { lines: CartLine[]; hydrated: boolean };
 type Action =
   | { type: "HYDRATE"; lines: CartLine[] }
   | { type: "ADD"; line: CartLine }
-  | { type: "SET_QTY"; productId: string; quantity: number }
-  | { type: "REMOVE"; productId: string }
+  | { type: "SET_QTY"; lineKey: string; quantity: number }
+  | { type: "REMOVE"; lineKey: string }
   | { type: "CLEAR" };
 
-const STORAGE_KEY = "kashu-cart-v1";
+const STORAGE_KEY = "kashu-cart-v2";
+
+function normalizeLine(raw: CartLine): CartLine {
+  const lineKey =
+    raw.lineKey ??
+    buildCartLineKey(raw.productId, raw.color, raw.size);
+  return { ...raw, lineKey };
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "HYDRATE":
-      return { ...state, lines: action.lines, hydrated: true };
+      return { ...state, lines: action.lines.map(normalizeLine), hydrated: true };
     case "ADD": {
-      const existing = state.lines.find((l) => l.productId === action.line.productId);
+      const line = normalizeLine(action.line);
+      const existing = state.lines.find((l) => l.lineKey === line.lineKey);
       if (existing) {
         return {
           ...state,
           lines: state.lines.map((l) =>
-            l.productId === action.line.productId
-              ? { ...l, quantity: l.quantity + action.line.quantity }
+            l.lineKey === line.lineKey
+              ? { ...l, quantity: l.quantity + line.quantity }
               : l
           ),
         };
       }
-      return { ...state, lines: [...state.lines, action.line] };
+      return { ...state, lines: [...state.lines, line] };
     }
     case "SET_QTY":
       return {
         ...state,
         lines: state.lines.map((l) =>
-          l.productId === action.productId ? { ...l, quantity: action.quantity } : l
+          l.lineKey === action.lineKey ? { ...l, quantity: action.quantity } : l
         ),
       };
     case "REMOVE":
-      return { ...state, lines: state.lines.filter((l) => l.productId !== action.productId) };
+      return { ...state, lines: state.lines.filter((l) => l.lineKey !== action.lineKey) };
     case "CLEAR":
       return { ...state, lines: [] };
     default:
@@ -70,9 +80,9 @@ const CartContext = createContext<{
   hydrated: boolean;
   count: number;
   subtotal: number;
-  addLine: (line: CartLine) => void;
-  setQuantity: (productId: string, quantity: number) => void;
-  removeLine: (productId: string) => void;
+  addLine: (line: Omit<CartLine, "lineKey"> & { lineKey?: string }) => void;
+  setQuantity: (lineKey: string, quantity: number) => void;
+  removeLine: (lineKey: string) => void;
   clearCart: () => void;
 } | null>(null);
 
@@ -82,7 +92,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      const lines = raw ? (JSON.parse(raw) as CartLine[]) : [];
+      let lines: CartLine[] = raw ? (JSON.parse(raw) as CartLine[]) : [];
+      if (!lines.length) {
+        const legacy = localStorage.getItem("kashu-cart-v1");
+        if (legacy) lines = JSON.parse(legacy) as CartLine[];
+      }
       dispatch({ type: "HYDRATE", lines });
     } catch {
       dispatch({ type: "HYDRATE", lines: [] });
@@ -94,17 +108,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.lines));
   }, [state.lines, state.hydrated]);
 
-  const addLine = useCallback((line: CartLine) => {
-    dispatch({ type: "ADD", line });
+  const addLine = useCallback((line: Omit<CartLine, "lineKey"> & { lineKey?: string }) => {
+    const normalized = normalizeLine(line as CartLine);
+    dispatch({ type: "ADD", line: normalized });
   }, []);
 
-  const setQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity < 1) dispatch({ type: "REMOVE", productId });
-    else dispatch({ type: "SET_QTY", productId, quantity });
+  const setQuantity = useCallback((lineKey: string, quantity: number) => {
+    if (quantity < 1) dispatch({ type: "REMOVE", lineKey });
+    else dispatch({ type: "SET_QTY", lineKey, quantity });
   }, []);
 
-  const removeLine = useCallback((productId: string) => {
-    dispatch({ type: "REMOVE", productId });
+  const removeLine = useCallback((lineKey: string) => {
+    dispatch({ type: "REMOVE", lineKey });
   }, []);
 
   const clearCart = useCallback(() => {
