@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { AuthAsidePanel } from "@/components/auth/auth-aside-panel";
 import { BRAND_NAME } from "@/lib/constants";
 
 type AuthShellProps = {
@@ -33,25 +33,7 @@ export function AuthShell({ title, subtitle, children, alternate }: AuthShellPro
           )}
         </div>
       </div>
-      <div className="relative hidden md:block min-h-[280px] md:min-h-[100%] lg:min-h-[480px] bg-charcoal">
-        <Image
-          src="https://images.unsplash.com/photo-1520639882103-09665fc45a87?w=1200&q=80"
-          alt=""
-          fill
-          className="object-cover opacity-90"
-          sizes="50vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
-        <div className="absolute bottom-12 left-12 right-12 max-w-md">
-          <p className="font-display text-paper text-3xl leading-snug">
-            Crafted for commutes, dinners, and everything between.
-          </p>
-          <p className="mt-4 text-stone/90 text-sm leading-relaxed">
-            Members get early access to drops and complimentary shipping above ₹2,499.
-          </p>
-        </div>
-      </div>
+      <AuthAsidePanel />
     </div>
   );
 }
