@@ -3,6 +3,7 @@ import { getBearerUser, requireAdmin } from "@/lib/auth-server";
 import { listCatalogProducts } from "@/lib/catalog";
 import { revalidateStorefrontCatalog } from "@/lib/revalidate-storefront";
 import { createDbProduct } from "@/lib/product-repository";
+import { normalizeSupplierUrl } from "@/lib/supplier-url";
 import type { CreateProductInput } from "@/lib/product-repository";
 
 export async function GET(request: Request) {
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
       images: body.images.map((u) => u.trim()).filter(Boolean),
       stock: Number(body.stock ?? 0),
       specDetails: body.specDetails?.length ? body.specDetails : undefined,
+      supplierUrl: normalizeSupplierUrl(body.supplierUrl),
       specs: body.specs ?? {
         material: "See description",
         dimensions: "—",

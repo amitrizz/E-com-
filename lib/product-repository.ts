@@ -17,6 +17,7 @@ export type CreateProductInput = {
   stock: number;
   specs: ProductSpecs;
   specDetails?: ProductSpecDetail[];
+  supplierUrl?: string;
   badge?: Product["badge"];
 };
 
@@ -48,6 +49,7 @@ function docToProduct(doc: Record<string, unknown>): Product {
     reviewCount: Number(doc.reviewCount ?? 0),
     specs: doc.specs as ProductSpecs,
     specDetails: doc.specDetails as ProductSpecDetail[] | undefined,
+    supplierUrl: doc.supplierUrl ? String(doc.supplierUrl) : undefined,
   };
 }
 

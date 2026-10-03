@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatInr } from "@/lib/currency";
 import { formatCartVariant } from "@/lib/cart-line";
 import { authHeaders, useAuth } from "@/hooks/auth-context";
+import { AdminSupplierLink } from "@/components/admin/admin-supplier-link";
 import type { Order } from "@/types/order";
 
 type Filter = "pending" | "processed" | "all";
@@ -163,6 +164,12 @@ export function AdminOrderList() {
                         ? ` · ${formatCartVariant(item.color, item.size)}`
                         : ""}
                     </p>
+                    <div className="mt-2">
+                      <AdminSupplierLink
+                        url={item.supplierUrl}
+                        label="Order on platform"
+                      />
+                    </div>
                     <p className="text-xs mt-1">
                       {formatInr(item.priceInr)} each
                       {item.compareAtInr && item.compareAtInr > item.priceInr && (

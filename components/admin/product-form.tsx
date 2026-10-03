@@ -89,6 +89,7 @@ export function ProductForm(props: Props) {
       sizeChartImage: sizeChartUrl ?? undefined,
       images: imageUrls,
       badge: String(fd.get("badge") || "") || undefined,
+      supplierUrl: String(fd.get("supplierUrl") ?? "").trim() || undefined,
       specs,
     };
 
@@ -229,6 +230,19 @@ export function ProductForm(props: Props) {
           defaultValue={initial?.specs.origin ?? "Crafted in India"}
         />
       </fieldset>
+
+      <div>
+        <Field
+          label="Platform / supplier link (admin only)"
+          name="supplierUrl"
+          type="url"
+          placeholder="https://www.meesho.com/... or Amazon / Flipkart URL"
+          defaultValue={initial?.supplierUrl}
+        />
+        <p className="text-xs text-muted mt-2">
+          Not shown to shoppers. Used in Admin → Orders to open the listing when you fulfill COD orders.
+        </p>
+      </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         <Field

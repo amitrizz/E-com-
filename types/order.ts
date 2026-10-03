@@ -9,6 +9,8 @@ export type OrderLine = {
   image: string;
   color?: string;
   size?: string;
+  /** Snapshot of product supplier link at order time (admin fulfillment) */
+  supplierUrl?: string;
 };
 
 export type OrderAddress = {

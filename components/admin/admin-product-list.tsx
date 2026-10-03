@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { formatInr } from "@/lib/currency";
 import { authHeaders, useAuth } from "@/hooks/auth-context";
+import { AdminSupplierLink } from "@/components/admin/admin-supplier-link";
 import type { CatalogProduct } from "@/lib/catalog";
 
 export function AdminProductList() {
@@ -142,6 +143,7 @@ export function AdminProductList() {
                 >
                   View store
                 </Link>
+                <AdminSupplierLink url={p.supplierUrl} className="h-10 !text-sm" label="Platform" />
                 {p.catalogSource === "database" ? (
                   <button
                     type="button"

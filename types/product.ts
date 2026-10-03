@@ -33,6 +33,8 @@ export type Product = {
   specs: ProductSpecs;
   /** Parsed from admin "Label: value" description paste */
   specDetails?: ProductSpecDetail[];
+  /** Admin-only: link to source marketplace listing for fulfillment */
+  supplierUrl?: string;
 };
 
 export type Category = {

@@ -4,6 +4,7 @@ import { getCatalogProductBySlug } from "@/lib/catalog";
 import { deleteProductMediaUrls } from "@/lib/product-media";
 import { revalidateStorefrontCatalog } from "@/lib/revalidate-storefront";
 import { deleteDbProductBySlug, upsertDbProductBySlug } from "@/lib/product-repository";
+import { normalizeSupplierUrl } from "@/lib/supplier-url";
 import type { UpdateProductInput } from "@/lib/product-repository";
 
 type RouteContext = { params: Promise<{ slug: string }> };
@@ -55,6 +56,7 @@ export async function PUT(request: Request, context: RouteContext) {
       images: body.images.map((u) => u.trim()).filter(Boolean),
       stock: Number(body.stock ?? 0),
       specDetails: body.specDetails?.length ? body.specDetails : undefined,
+      supplierUrl: normalizeSupplierUrl(body.supplierUrl),
       specs: body.specs ?? existing.specs,
       badge:
         body.badge === "New" || body.badge === "Bestseller" || body.badge === "Sale"

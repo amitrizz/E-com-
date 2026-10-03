@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { getBearerUser } from "@/lib/auth-server";
 import { getShippingInr, getCheckoutTotal } from "@/lib/checkout-totals";
+import { getProductBySlug } from "@/lib/api";
 import { createOrder, listOrdersForUser } from "@/lib/order-repository";
+import { normalizeSupplierUrl } from "@/lib/supplier-url";
 import { saveSavedAddress } from "@/lib/user-repository";
 import type { OrderLine } from "@/types/order";
 
@@ -29,14 +31,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email and items are required." }, { status: 400 });
     }
 
-    const subtotalInr = items.reduce((s, i) => s + i.priceInr * i.quantity, 0);
+    const enrichedItems: OrderLine[] = await Promise.all(
+      items.map(async (item) => {
+        const product = await getProductBySlug(item.slug);
+        const supplierUrl =
+          normalizeSupplierUrl(item.supplierUrl) ??
+          normalizeSupplierUrl(product?.supplierUrl);
+        return supplierUrl ? { ...item, supplierUrl } : item;
+      })
+    );
+
+    const subtotalInr = enrichedItems.reduce((s, i) => s + i.priceInr * i.quantity, 0);
     const shippingInr = getShippingInr(subtotalInr);
     const totalInr = getCheckoutTotal(subtotalInr);
 
     const order = await createOrder({
       userId: user?.id,
       email,
-      items,
+      items: enrichedItems,
       subtotalInr,
       shippingInr,
       totalInr,
