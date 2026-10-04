@@ -68,6 +68,13 @@ export async function listAllOrders(): Promise<Order[]> {
   return docs.map((d) => docToOrder(d as Record<string, unknown>));
 }
 
+export async function getOrderById(orderId: string): Promise<Order | null> {
+  if (!ObjectId.isValid(orderId)) return null;
+  const db = await getDb();
+  const doc = await db.collection(COLLECTION).findOne({ _id: new ObjectId(orderId) });
+  return doc ? docToOrder(doc as Record<string, unknown>) : null;
+}
+
 export async function updateOrderStatus(
   orderId: string,
   status: Order["status"]

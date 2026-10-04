@@ -8,19 +8,35 @@ import { authHeaders, useAuth } from "@/hooks/auth-context";
 import { AdminSupplierLink } from "@/components/admin/admin-supplier-link";
 import type { Order } from "@/types/order";
 
-type Filter = "pending" | "processed" | "all";
+type StatusTab = Order["status"] | "all";
+
+const TABS: { key: StatusTab; label: string }[] = [
+  { key: "confirmed", label: "To process" },
+  { key: "processing", label: "Processing" },
+  { key: "shipped", label: "Shipped" },
+  { key: "delivered", label: "Delivered" },
+  { key: "all", label: "All" },
+];
 
 const ADMIN_STATUS: Record<Order["status"], string> = {
   confirmed: "To process",
-  processing: "Processed",
+  processing: "Processing",
   shipped: "Shipped",
   delivered: "Delivered",
+};
+
+const TAB_HINT: Record<StatusTab, string> = {
+  confirmed: "New COD orders — move each to Processing when you start fulfillment.",
+  processing: "Being prepared — mark Shipped when dispatched.",
+  shipped: "In transit — mark Delivered when the customer receives the order.",
+  delivered: "Completed orders.",
+  all: "Every order across all stages.",
 };
 
 export function AdminOrderList() {
   const { token, status } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filter, setFilter] = useState<Filter>("pending");
+  const [filter, setFilter] = useState<StatusTab>("confirmed");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -54,16 +70,21 @@ export function AdminOrderList() {
     load();
   }, [token, status, load]);
 
+  const counts = useMemo(() => {
+    const c: Record<Order["status"], number> = {
+      confirmed: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+    };
+    for (const o of orders) c[o.status]++;
+    return c;
+  }, [orders]);
+
   const filtered = useMemo(() => {
     if (filter === "all") return orders;
-    if (filter === "pending") return orders.filter((o) => o.status === "confirmed");
-    return orders.filter((o) => o.status !== "confirmed");
+    return orders.filter((o) => o.status === filter);
   }, [orders, filter]);
-
-  const pendingCount = useMemo(
-    () => orders.filter((o) => o.status === "confirmed").length,
-    [orders]
-  );
 
   async function setStatus(orderId: string, next: Order["status"]) {
     if (!token) return;
@@ -80,7 +101,11 @@ export function AdminOrderList() {
         setError(data.error ?? "Update failed");
         return;
       }
-      setOrders((list) => list.map((o) => (o.id === orderId ? (data.order as Order) : o)));
+      const updated = data.order as Order;
+      setOrders((list) => list.map((o) => (o.id === orderId ? updated : o)));
+      if (filter !== "all" && filter !== updated.status) {
+        setFilter(updated.status);
+      }
     } catch {
       setError("Update failed");
     } finally {
@@ -88,37 +113,32 @@ export function AdminOrderList() {
     }
   }
 
+  function tabLabel(key: StatusTab, label: string) {
+    if (key === "all") return label;
+    const n = counts[key as Order["status"]];
+    return n > 0 ? `${label} (${n})` : label;
+  }
+
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 className="font-display text-3xl sm:text-4xl">Orders</h1>
-          <p className="text-sm text-muted mt-2">
-            {pendingCount > 0
-              ? `${pendingCount} order${pendingCount === 1 ? "" : "s"} awaiting processing.`
-              : "No new orders waiting."}
-          </p>
-        </div>
-        <div className="flex gap-2 text-sm">
-          {(
-            [
-              ["pending", "To process"],
-              ["processed", "Processed"],
-              ["all", "All"],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilter(key)}
-              className={`h-10 px-4 border ${
-                filter === key ? "border-ink bg-ink text-paper" : "border-line text-ink"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="mb-6">
+        <h1 className="font-display text-3xl sm:text-4xl">Orders</h1>
+        <p className="text-sm text-muted mt-2">{TAB_HINT[filter]}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-sm mb-8">
+        {TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setFilter(key)}
+            className={`h-10 px-3 sm:px-4 border ${
+              filter === key ? "border-ink bg-ink text-paper" : "border-line text-ink"
+            }`}
+          >
+            {tabLabel(key, label)}
+          </button>
+        ))}
       </div>
 
       {loading && <p className="text-sm text-muted">Loading orders…</p>}
@@ -143,7 +163,9 @@ export function AdminOrderList() {
                 className={`text-[10px] uppercase tracking-widest px-2 py-1 border ${
                   order.status === "confirmed"
                     ? "border-accent text-accent bg-accent/5"
-                    : "border-line text-muted"
+                    : order.status === "delivered"
+                      ? "border-ink/20 text-ink"
+                      : "border-line text-muted"
                 }`}
               >
                 {ADMIN_STATUS[order.status]}
@@ -165,10 +187,7 @@ export function AdminOrderList() {
                         : ""}
                     </p>
                     <div className="mt-2">
-                      <AdminSupplierLink
-                        url={item.supplierUrl}
-                        label="Order on platform"
-                      />
+                      <AdminSupplierLink url={item.supplierUrl} label="Order on platform" />
                     </div>
                     <p className="text-xs mt-1">
                       {formatInr(item.priceInr)} each
@@ -213,28 +232,18 @@ export function AdminOrderList() {
                   onClick={() => setStatus(order.id, "processing")}
                   className="h-10 px-4 bg-ink text-paper text-sm disabled:opacity-50"
                 >
-                  {updatingId === order.id ? "Saving…" : "Mark as processed"}
+                  {updatingId === order.id ? "Saving…" : "Move to processing"}
                 </button>
               )}
               {order.status === "processing" && (
-                <>
-                  <button
-                    type="button"
-                    disabled={updatingId === order.id}
-                    onClick={() => setStatus(order.id, "shipped")}
-                    className="h-10 px-4 border border-ink text-sm disabled:opacity-50"
-                  >
-                    Mark shipped
-                  </button>
-                  <button
-                    type="button"
-                    disabled={updatingId === order.id}
-                    onClick={() => setStatus(order.id, "delivered")}
-                    className="h-10 px-4 bg-ink text-paper text-sm disabled:opacity-50"
-                  >
-                    Mark delivered
-                  </button>
-                </>
+                <button
+                  type="button"
+                  disabled={updatingId === order.id}
+                  onClick={() => setStatus(order.id, "shipped")}
+                  className="h-10 px-4 bg-ink text-paper text-sm disabled:opacity-50"
+                >
+                  {updatingId === order.id ? "Saving…" : "Mark shipped"}
+                </button>
               )}
               {order.status === "shipped" && (
                 <button
@@ -243,7 +252,7 @@ export function AdminOrderList() {
                   onClick={() => setStatus(order.id, "delivered")}
                   className="h-10 px-4 bg-ink text-paper text-sm disabled:opacity-50"
                 >
-                  Mark delivered
+                  {updatingId === order.id ? "Saving…" : "Mark delivered"}
                 </button>
               )}
             </div>
