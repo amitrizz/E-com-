@@ -81,14 +81,9 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { slug } = await context.params;
 
     const removed = await deleteDbProductBySlug(slug);
+
     if (!removed) {
-      return NextResponse.json(
-        {
-          error:
-            "This demo catalog item is not in the database. Only saved or edited products can be deleted.",
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Product not found." }, { status: 404 });
     }
 
     const mediaUrls = [
@@ -97,7 +92,6 @@ export async function DELETE(request: Request, context: RouteContext) {
     ];
     await deleteProductMediaUrls(mediaUrls);
     revalidateStorefrontCatalog(removed);
-
     return NextResponse.json({ ok: true, slug });
   } catch (e) {
     if (e instanceof Error && e.message === "Unauthorized") {

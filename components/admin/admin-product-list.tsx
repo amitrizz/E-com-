@@ -45,12 +45,8 @@ export function AdminProductList() {
   }, [token, status, loadProducts]);
 
   async function onDelete(p: CatalogProduct) {
-    if (p.catalogSource !== "database") {
-      setError("Demo catalog items cannot be deleted. They are built into the app.");
-      return;
-    }
     const ok = window.confirm(
-      `Delete “${p.name}” from the shop?\n\nUploaded images in MongoDB will be removed. If this replaced a demo product, the demo version will show again.`
+      `Permanently delete “${p.name}”?\n\nThis removes the product and its uploaded images from MongoDB.`
     );
     if (!ok || !token) return;
 
@@ -81,7 +77,7 @@ export function AdminProductList() {
         <div>
           <h1 className="font-display text-3xl sm:text-4xl">Products</h1>
           <p className="text-sm text-muted mt-2">
-            Same catalog as the shop — demo items and MongoDB products. Edit any listing; delete database items only.
+            Products stored in MongoDB — same catalog as the shop.
           </p>
         </div>
         <Link
@@ -120,15 +116,6 @@ export function AdminProductList() {
                 <p className="text-sm text-muted mt-0.5">
                   {p.categorySlug} · {formatInr(p.priceInr)} · stock {p.stock}
                 </p>
-                <span
-                  className={`inline-block mt-1.5 text-[10px] uppercase tracking-wider px-1.5 py-0.5 border ${
-                    p.catalogSource === "database"
-                      ? "border-ink/30 text-ink"
-                      : "border-line text-muted"
-                  }`}
-                >
-                  {p.catalogSource === "database" ? "Database" : "Demo catalog"}
-                </span>
               </div>
               <div className="flex flex-wrap gap-3 text-sm w-full sm:w-auto sm:justify-end">
                 <Link
@@ -144,23 +131,14 @@ export function AdminProductList() {
                   View store
                 </Link>
                 <AdminSupplierLink url={p.supplierUrl} className="h-10 !text-sm" label="Platform" />
-                {p.catalogSource === "database" ? (
-                  <button
-                    type="button"
-                    disabled={deletingSlug === p.slug}
-                    onClick={() => onDelete(p)}
-                    className="h-10 px-4 inline-flex items-center border border-red-800/40 text-red-800 disabled:opacity-50"
-                  >
-                    {deletingSlug === p.slug ? "Deleting…" : "Delete"}
-                  </button>
-                ) : (
-                  <span
-                    className="h-10 px-4 inline-flex items-center text-xs text-muted"
-                    title="Built-in demo products cannot be deleted"
-                  >
-                    —
-                  </span>
-                )}
+                <button
+                  type="button"
+                  disabled={deletingSlug === p.slug}
+                  onClick={() => onDelete(p)}
+                  className="h-10 px-4 inline-flex items-center border border-red-800/40 text-red-800 disabled:opacity-50"
+                >
+                  {deletingSlug === p.slug ? "Deleting…" : "Delete"}
+                </button>
               </div>
             </li>
           ))}

@@ -120,9 +120,6 @@ export function ProductForm(props: Props) {
       {props.mode === "edit" && initial && (
         <p className="text-xs text-muted">
           Slug: <span className="text-charcoal">{initial.slug}</span>
-          {initial.catalogSource === "seed" && (
-            <span className="ml-2 text-accent">· Saving will store this product in MongoDB</span>
-          )}
         </p>
       )}
 

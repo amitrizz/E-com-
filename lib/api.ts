@@ -1,19 +1,14 @@
 import { categories } from "@/data/categories";
 import { collections } from "@/data/collections";
-import { products as seedProducts } from "@/data/products";
 import { getDbProductBySlug, listDbProducts } from "@/lib/product-repository";
 import type { Category, Collection, Product } from "@/types/product";
 
 async function allProducts(): Promise<Product[]> {
-  let dbItems: Product[] = [];
   try {
-    dbItems = await listDbProducts();
+    return await listDbProducts();
   } catch {
-    dbItems = [];
+    return [];
   }
-  const slugs = new Set(dbItems.map((p) => p.slug));
-  const seed = seedProducts.filter((p) => !slugs.has(p.slug));
-  return [...dbItems, ...seed];
 }
 
 export async function getProducts(): Promise<Product[]> {
@@ -22,12 +17,10 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const fromDb = await getDbProductBySlug(slug);
-    if (fromDb) return fromDb;
+    return await getDbProductBySlug(slug);
   } catch {
-    /* fall through */
+    return null;
   }
-  return seedProducts.find((p) => p.slug === slug) ?? null;
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
