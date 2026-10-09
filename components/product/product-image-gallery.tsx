@@ -8,7 +8,7 @@ type Props = {
   alt: string;
 };
 
-function useUnoptimized(src: string) {
+function isUnoptimizedMedia(src: string) {
   return src.startsWith("/api/media") || src.startsWith("http");
 }
 
@@ -37,7 +37,7 @@ export function ProductImageGallery({ images, alt }: Props) {
           priority={safeIndex === 0}
           className="object-cover"
           sizes="(max-width: 1024px) 100vw, 50vw"
-          unoptimized={useUnoptimized(mainSrc)}
+          unoptimized={isUnoptimizedMedia(mainSrc)}
         />
       </div>
 
@@ -65,7 +65,7 @@ export function ProductImageGallery({ images, alt }: Props) {
                     fill
                     className="object-cover"
                     sizes="72px"
-                    unoptimized={useUnoptimized(src)}
+                    unoptimized={isUnoptimizedMedia(src)}
                   />
                 </button>
               </li>

@@ -1,5 +1,3 @@
-import { ANNOUNCEMENT } from "@/lib/constants";
-
 export function AnnouncementBar() {
   return (
     <div className="bg-ink text-paper text-center text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.18em] leading-relaxed py-2 sm:py-2.5 px-3 sm:px-4">

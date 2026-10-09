@@ -101,7 +101,7 @@ export async function deleteDbProductBySlug(slug: string): Promise<Product | nul
 
 export async function createDbProduct(input: CreateProductInput): Promise<Product> {
   const db = await getDb();
-  let baseSlug = slugify(input.name);
+  const baseSlug = slugify(input.name);
   let slug = baseSlug;
   let n = 1;
   while (await db.collection(COLLECTION).findOne({ slug })) {
