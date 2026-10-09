@@ -11,13 +11,17 @@ function formatUptime(totalSeconds: number): string {
 
 export async function GET() {
   const uptimeSeconds = Math.floor(process.uptime());
+  const uptime = formatUptime(uptimeSeconds);
+  const timestamp = new Date().toISOString();
+
+  console.log(`[HEALTH CHECK] Server pinged at ${timestamp} | Uptime: ${uptime} (${uptimeSeconds}s)`);
 
   return NextResponse.json(
     {
       status: "ok",
       message: "Server is running",
-      timestamp: new Date().toISOString(),
-      uptime: formatUptime(uptimeSeconds),
+      timestamp,
+      uptime,
       uptimeSeconds,
     },
     { status: 200 }
