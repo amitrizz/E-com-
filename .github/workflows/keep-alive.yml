@@ -1,0 +1,44 @@
+name: Keep Alive
+
+on:
+  schedule:
+    # Runs every 14 minutes to keep the server warm and prevent cold starts / sleep
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Target health check URL (optional, defaults to SITE_URL secret/variable)"
+        required: false
+        default: ""
+
+jobs:
+  keep-alive:
+    name: Ping Health Endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          TARGET_URL="${{ github.event.inputs.url || vars.SITE_URL || secrets.SITE_URL || 'https://kashu-storefront.vercel.app' }}"
+          # Trim trailing slash if present
+          TARGET_URL="${TARGET_URL%/}"
+
+          # Append /api/health if not already specified in the URL
+          if [[ "$TARGET_URL" != *"/api/health"* && "$TARGET_URL" != *"/health"* ]]; then
+            TARGET_URL="$TARGET_URL/api/health"
+          fi
+
+          echo "Pinging health endpoint: $TARGET_URL"
+          RESPONSE=$(curl -s -S -w "\n%{http_code}" --max-time 30 "$TARGET_URL")
+          HTTP_BODY=$(echo "$RESPONSE" | sed '$d')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+
+          echo "HTTP Status Code: $HTTP_CODE"
+          echo "Response Body: $HTTP_BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "Server is active and healthy!"
+            exit 0
+          else
+            echo "Health check returned unexpected status: $HTTP_CODE"
+            exit 1
+          fi
