@@ -2,8 +2,8 @@ name: Keep Alive
 
 on:
   schedule:
-    # Runs every 14 minutes to keep the server warm and prevent cold starts / sleep
-    - cron: "*/14 * * * *"
+    # Runs every 8 minutes to keep the server warm and prevent cold starts / sleep
+    - cron: "*/8 * * * *"
   workflow_dispatch:
     inputs:
       url:
